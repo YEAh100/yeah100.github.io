@@ -17,4 +17,4 @@ def scrape_and_extract():
     return jsonify(entities)
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port=42251)

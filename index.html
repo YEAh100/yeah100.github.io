@@ -1,16 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Project Title</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
+<html>
 <body>
-    <header>
-        <h1>Welcome to My GitHub Page</h1>
-    </header>
-    <main>
-        <!-- Your content goes here -->
-    </main>
-    <footer>
+
+<h2>Web Scraping and Text Extraction</h2>
+
+<form action="">
+  <label for="url">URL:</label><br>
+  <input type="text" id="url" name="url"><br>
+  <label for="result">Result:</label><br>
+  <input type="text" id="result" name="result"><br><br>
+  <input type="button" value="Button" onclick="scrapeAndExtract()">
+</form> 
+
+<script>
+async function scrapeAndExtract() {
+  const url = document.getElementById('url').value;
+  const response = await fetch('/scrape_and_extract', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ url })
+  });
+  const data = await response.json();
+  document.getElementById('result').value = data.result;
+}
+</script>
+
+</body>
+</html>

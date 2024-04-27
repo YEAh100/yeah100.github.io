@@ -1,20 +1,19 @@
-from flask import Flask, request, jsonify
-from bs4 import BeautifulSoup
+from flask import Flask, request, render_template
 import requests
-import spacy
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
-nlp = spacy.load("en_core_web_sm")
 
-@app.route('/scrape_and_extract', methods=['POST'])
-def scrape_and_extract():
-    url = request.json['url']
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    text = ' '.join(soup.stripped_strings)
-    doc = nlp(text)
-    entities = {ent.text: ent.label_ for ent in doc.ents}
-    return jsonify(entities)
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    if request.method == 'POST':
+        url = request.form.get('url')
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        text_tags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']
+        scraped_text = ' '.join([tag.get_text() for tag in soup.find_all(text_tags)])
+        return render_template('index.html', scraped_text=scraped_text)
+    return render_template('index.html')
 
-if __name__ == '__main__':
-    app.run(port=42251)
+if __name__ == "__main__":
+    app.run(debug=True)

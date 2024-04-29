@@ -1,1 +1,1 @@
-# yeah1000.github.io
+yeah1000.github.io

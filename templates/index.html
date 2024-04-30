@@ -4,7 +4,7 @@
     <title>Web Scraper</title>
 </head>
 <body>
-    <form method="POST">
+    <form action="/" method="POST">
         <input type="text" name="url" placeholder="Enter URL" required>
         <input type="checkbox" name="auto_save" value="true"> Auto Save<br>
         <textarea name="target_text" placeholder="Enter target text">{{ scraped_text }}</textarea>

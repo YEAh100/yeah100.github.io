@@ -1,9 +1,7 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, Response
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from tkinter import filedialog
-from tkinter import Tk
 
 app = Flask(__name__)
 
@@ -32,11 +30,13 @@ def home():
                 # Save the DataFrame to a CSV file
                 df.to_csv('dataset.csv', index=False)
             else:
-                # Open a file dialog to select the save location
-                root = Tk()
-                root.withdraw()  # Hide the main window
-                file_path = filedialog.asksaveasfilename(defaultextension='.csv')
-                df.to_csv(file_path, index=False)
+                # Return the DataFrame as a CSV response
+                csv = df.to_csv(index=False)
+                return Response(
+                    csv,
+                    mimetype="text/csv",
+                    headers={"Content-disposition":
+                             "attachment; filename=dataset.csv"})
 
     return render_template('index.html', scraped_text=scraped_text)
 

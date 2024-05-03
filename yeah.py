@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, Response, session
+from flask import Flask, request, render_template, Response, session, redirect, url_for
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -27,12 +27,24 @@ def home():
         # Save the DataFrame to session
         session['df'] = df.to_dict()
 
+        # Redirect to the preview route
+        return redirect(url_for('preview'))
+
     return render_template('index.html')
 
-@app.route('/preview', methods=['GET'])
+@app.route('/preview', methods=['GET', 'POST'])
 def preview():
     df = pd.DataFrame(session.get('df', {}))
-    return df.to_html()
+    scraped_text = df['ScrapedText'][0] if 'ScrapedText' in df else ''
+
+    if request.method == 'POST':
+        # Update the scraped text with the edited text
+        edited_text = request.form.get('edited_text')
+        df['ScrapedText'][0] = edited_text
+        session['df'] = df.to_dict()
+        return render_template('preview.html', scraped_text=scraped_text)
+
+    return scraped_text  # Return just the scraped text for GET requests
 
 @app.route('/download', methods=['GET'])
 def download():

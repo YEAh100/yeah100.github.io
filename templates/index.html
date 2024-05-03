@@ -8,9 +8,22 @@
         <input type="text" name="url" placeholder="Enter URL" required>
         <input type="checkbox" name="auto_save" value="true"> Auto Save<br>
         <textarea name="target_text" placeholder="Enter target text"></textarea>
-        <button type="submit">Submit</button>
+        <input type="submit" value="Scrape">
     </form>
-    <button onclick="window.location.href='/preview'">Preview</button>
+    <button onclick="fetchPreview()">Show Preview</button>
+    <form action="/preview" method="POST">
+        <textarea id="preview" name="edited_text" rows="10" cols="30" placeholder="Preview will be shown here..."></textarea>
+        <input type="submit" value="Update">
+    </form>
     <button onclick="window.location.href='/download'">Download</button>
+    <script>
+        function fetchPreview() {
+            fetch('/preview')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('preview').value = data;
+                });
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Slinger 3D</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #fff;
+            background-color: #111;
+        }
+        header {
+            background-color: #111;
+            color: #fff;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        header h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        #cart-items {
+            list-style-type: none;
+            padding: 0;
+        }
+        #cart-items li {
+            background-color: #202020;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #cart-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #fff;
+            color: #000;
+            padding: 0.7rem 1.5rem;
+            text-decoration: none;
+            border-radius: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Shopping Cart</h1>
+    </header>
+    <main>
+        <ul id="cart-items"></ul>
+        <p id="cart-total">Total: $0.00</p>
+        <button id="checkout-button" class="btn">Proceed to Checkout</button>
+    </main>
+
+    <script>
+        var stripe = Stripe('pk_test_51PapogRxyQ5wKSbyTmxsLvvWEia4AYuxX8fqn1F1Pd0AXVDvbFrCCNwviQahlAkNuy4xYtafLnyaHaXFrP721b6Q00mmrBVqDh');
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            cartItems.innerHTML = '';
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${item.product} - $${item.price.toFixed(2)}</span>
+                    <button onclick="removeFromCart(${index})">Remove</button>
+                `;
+                cartItems.appendChild(li);
+                total += item.price;
+            });
+
+            cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        document.getElementById('checkout-button').addEventListener('click', function() {
+            stripe.redirectToCheckout({
+                lineItems: cart.map(item => ({
+                    price: item.stripePrice,
+                    quantity: 1,
+                })),
+                mode: 'payment',
+                successUrl: 'https://yeah100.github.io/success.html',
+                cancelUrl: 'https://yeah100.github.io/cancel.html',
+            }).then(function (result) {
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            });
+        });
+
+        updateCart();
+    </script>
+</body>
+</html>

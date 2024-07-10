@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slinger 3D - Premium 3D Printer Parts</title>
+    <title>Slinger 3D - FDM Parts</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -74,8 +76,6 @@
             margin-top: 2rem;
             font-size: 0.8rem;
         }
-        
-        /* Search and filter styles */
         .search-filter {
             margin-bottom: 2rem;
         }
@@ -107,8 +107,6 @@
             display: block;
             margin-bottom: 0.5rem;
         }
-
-        /* Product grid styles */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -138,8 +136,6 @@
             font-size: 0.9rem;
             color: #aaa;
         }
-
-        /* Product tag styles */
         .product-tags {
             display: flex;
             justify-content: center;
@@ -153,16 +149,36 @@
             font-weight: bold;
         }
         .tag.oem {
-            background-color: #FFD700; /* Gold color for OEM */
+            background-color: #FFD700;
             color: #000;
         }
         .tag.aftermarket {
-            background-color: #32CD32; /* Lime Green for Aftermarket */
+            background-color: #32CD32;
             color: #fff;
         }
         .tag.printer {
-            background-color: #FF6347; /* Tomato color for printer type */
+            background-color: #FF6347;
             color: #fff;
+        }
+        #cart-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #202020;
+            padding: 0.5rem;
+            border-radius: 50%;
+            z-index: 1000;
+            cursor: pointer;
+        }
+        #cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -172,7 +188,7 @@
     </header>
     <nav>
         <ul>
-            <li><a href="#home">Home</a></li>
+            <li><a href="index.html">Home</a></li>
             <li><a href="#products">FDM</a></li>
             <li><a href="#products">CNC</a></li>
             <li><a href="#products">SLA</a></li>
@@ -180,6 +196,12 @@
             <li><a href="#contact">Contact</a></li>
         </ul>
     </nav>
+    
+    <div id="cart-icon">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="cart-count">0</span>
+    </div>
+
     <main>
         <section id="buy-page">
             <div class="search-filter">
@@ -209,7 +231,7 @@
                     </div>
                     <p>High-precision extruder gear for smooth filament feeding.</p>
                     <p>$24.99</p>
-                    <a href="#" class="btn" id="buy-extruder">Buy Now</a>
+                    <a href="#" class="btn" data-stripe-price-id="price_1234567890">Buy Now</a>
                 </div>
                 <div class="product-card">
                     <img src="https://placeholder.com/300x200" alt="Heated Bed">
@@ -220,7 +242,7 @@
                     </div>
                     <p>Premium heated bed for consistent print adhesion.</p>
                     <p>$89.99</p>
-                    <a href="#" class="btn" id="buy-heated-bed">Buy Now</a>
+                    <a href="#" class="btn" data-stripe-price-id="price_2345678901">Buy Now</a>
                 </div>
                 <div class="product-card">
                     <img src="https://placeholder.com/300x200" alt="Nozzle Set">
@@ -231,35 +253,49 @@
                     </div>
                     <p>Set of 5 nozzles in various sizes for versatile printing.</p>
                     <p>$34.99</p>
-                    <a href="#" class="btn" id="buy-nozzle-set">Buy Now</a>
+                    <a href="#" class="btn" data-stripe-price-id="price_3456789012">Buy Now</a>
                 </div>
-                <!-- Add more product cards here to fill out the grid -->
             </div>
         </section>
     </main>
+    
     <footer>
         <p>&copy; 2024 Slinger 3D. All rights reserved.</p>
     </footer>
+
     <script>
-        function handlePurchase(productId) {
-            console.log('Purchase initiated for product:', productId);
-            alert('Purchase functionality would be implemented here');
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function addToCart(product, price, stripePrice) {
+            cart.push({product, price, stripePrice});
+            updateCartIcon();
+            localStorage.setItem('cart', JSON.stringify(cart));
         }
 
-        document.getElementById('buy-extruder').addEventListener('click', function(e) {
-            e.preventDefault();
-            handlePurchase('extruder');
+        function updateCartIcon() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function handlePurchase(productId, price, stripePrice) {
+            addToCart(productId, price, stripePrice);
+        }
+
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const productCard = this.closest('.product-card');
+                const productName = productCard.querySelector('h3').textContent;
+                const productPrice = parseFloat(productCard.querySelector('p:last-of-type').textContent.replace('$', ''));
+                const stripePrice = this.dataset.stripePriceId;
+                handlePurchase(productName, productPrice, stripePrice);
+            });
         });
 
-        document.getElementById('buy-heated-bed').addEventListener('click', function(e) {
-            e.preventDefault();
-            handlePurchase('heated-bed');
+        document.getElementById('cart-icon').addEventListener('click', function() {
+            window.location.href = 'cart.html';
         });
 
-        document.getElementById('buy-nozzle-set').addEventListener('click', function(e) {
-            e.preventDefault();
-            handlePurchase('nozzle-set');
-        });
+        updateCartIcon();
 
         // Search and filter functionality
         document.querySelector('.search-bar').addEventListener('input', filterProducts);
